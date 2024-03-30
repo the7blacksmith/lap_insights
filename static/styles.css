@@ -1,0 +1,28 @@
+nav ul {
+    list-style: none;
+    padding: 10px;
+    margin: 0;
+}
+nav ul li a {
+    text-decoration: none;
+    /* Otros estilos según sea necesario */
+}
+.laps {
+    color: black;
+    font-size: 30px;
+    font-family: "Courier New", Courier, monospace;
+}
+
+.insights {
+    color:#FF00BC;
+    font-size: 30px;
+    font-family: "Courier New", Courier, monospace;
+}
+
+.titulos {
+    text-align: center;
+    color: black;
+    font-size: 30px;
+    font-family: "Courier New", Courier, monospace;
+}
+    
