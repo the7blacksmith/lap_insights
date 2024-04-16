@@ -1,5 +1,14 @@
 {%extends "base.html"%}
 {%block main%}
-
+<div class = "brand-text reloj">⏱️</div>
 <div class = "brand-text titulos"> dive into your race lap times</div>
+<div class = "brand-text center">
+    <p class="brand-text laps">Upload your csv race file!</p>
+    <form method = "POST" enctype="multipart/form-data" action = "/race">    
+        <label for="fileInput" class="custom-upload-btn">Select file</label>
+        <input type="file" id="fileInput" name="file" accept=".csv" style="display: none;">
+        <button id="uploadButton" class="custom-upload-btn">Upload</button>
+
+    </form>
+</div>
 {%endblock%}
