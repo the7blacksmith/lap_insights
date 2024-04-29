@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, current_app
+from flask import Blueprint, render_template, request, current_app, send_file
 from scripts.data import Henakart
 from werkzeug.utils import secure_filename
 import os, json
@@ -8,6 +8,13 @@ web = Blueprint("web", __name__)
 @web.route("/")
 def t_home():
     return render_template("index.html")
+
+@web.route('/download')
+def download():
+    file_path= "staticFiles/test.csv"
+    return send_file(file_path, as_attachment=True)
+
+
 
 @web.route('/race', methods=['GET', 'POST'])
 def plot_race():
