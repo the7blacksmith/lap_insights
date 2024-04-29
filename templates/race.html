@@ -1,52 +1,183 @@
 {%extends "base.html"%}
 {%block main%}
 <body>
-    <table class = "container">
-    <tr>
-        <td><button class = "button-race">race</button></td>
-    
-    </tr> 
-    </table> 
-    <table class = "container">
-        <tr>
-        
-    
-        <td><button class = "button-race" >absolute best lap</button></td>
 
-        <td><button class = "button-race" >best lap per lap</button></td>
+    <input type="hidden" name="p_race" value="{{race}}" id="p_race">
+    <input type="hidden" name="p_variables" value="{{variables}}" id="p_variables">
+    <input type="hidden" name="p_laps" value="{{laps}}" id="p_laps">
+    <input type="hidden" name="p_drivers" value="{{drivers}}" id="p_drivers">
+    <input type="hidden" name="p_mean_drivers" value="{{mean_drivers}}" id="p_mean_drivers">
+    <input type="hidden" name="p_best_drivers" value="{{best_drivers}}" id="p_best_drivers">
+    <input type="hidden" name="p_best_lap" value="{{best_lap}}" id="p_best_lap">
+    <input type="hidden" name="" value="{{mean_lap}}" id="p_mean_lap">
+    
 
-        <td><button class = "button-race" >best lap per driver</button></td>
-
-        </tr>
-    </table>  
-    <table class = "container">
-        <tr>
-    
-            <td><button class = "button-race" >absolute mean</button></td>
-    
-            <td><button class = "button-race" >mean per lap</button></td>
-        
-            <td><button class = "button-race" >mean per driver</button></td>
-    
-        </tr>
-
-    </table>
-    
-    <div class = "drivers_container">
-        <p class = "driver_title">Drivers</p>
+    <div class = "center-newey">
+        <p class = "titulos-newey">“evolution is often the key once the spark of a good direction has been set”</p>
     </div>
-    <div class = "buttons_container">
-        {%for driver in drivers_list%}
-        <button class = "button-driver">{{driver}}</button>
-        {%endfor%}
+    <div>
+        <p class = "quote-name">adrian newey</p>
+    </div>
+    <section class = "container-plots">
+        <figure class = "figures_plots">
+            <div class = "text-figure">mean per driver</div>
+            <canvas id = "meanChart"></canvas>
+        </figure>
+        <figure class = "figures_radar">
+            <div class = "text-figure">best lap per driver</div>
+            <canvas id = "bestChart"></canvas>
+        </figure>
+    </section>
 
-    </div>   
-    <!-- <div class="d-flex justify-content-center">
+
+
+    <div class = "center">
+        <p class = "text-rac">click on the boxes to select the parameters you want insights about</p> 
+    </div>
+    <div class = "plot_container">
         <canvas id="myChart"></canvas>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
+
+    <script>
+        
+        const getDataColors = opacity => {
+        const colors = ['#FF6347', '#8A2BE2', '#4B0082', '#DAA520', '#000080', '#4682B4', '#696969', '#7B68EE', '#FF0000', '#FFE4B5', '#BA55D3', '#FFFF00', '#FA8072', '#DAA520', '#FF8C00', '#FFB90F', '#008000', '#800080', '#BDB76B', '#FF69B4', '#556B2F', '#FF1493', '#00FA9A', '#9400D3', '#008000', '#4169E1', '#8A2BE2', '#808080', '#2F4F4F', '#008080', '#DC143C', '#FF7F50', '#D2691E', '#6495ED', '#2E8B57', '#FF7F50', '#A0522D', '#800080', '#FFD700', '#40E0D0', '#FF4500', '#FF00FF', '#FF8000', '#00CED1', '#8000FF', '#DEB887', '#FFFFFF', '#9370DB', '#20B2AA', '#FFA6A6', '#D2691E', '#228B22', '#20B2AA', '#FF4500', '#FFD700', '#FFD1DC', '#0000FF', '#FFA500', '#F5F5F5', '#32CD32', '#FA8072', '#008080', '#FF69B4', '#800000', '#00FFFF', '#00FF00', '#B0C4DE', '#FF00FF', '#000000', '#BDB76B', '#8B008B', '#0000FF', '#808000', '#00FF80', '#FFA500', '#C0C0C0', '#FF8C00']
+        return colors.map(color => opacity ? `${color + opacity}` : color)
+        }
+        const ctx_0 = document.getElementById('meanChart');
+        const ctx_1 = document.getElementById('bestChart')
+        const p_mean_drivers = document.getElementById("p_mean_drivers").value;
+        const p_drivers = document.getElementById("p_drivers").value;
+        const p_bestd = document.getElementById("p_best_drivers").value;
+        const meanDrivers = JSON.parse(p_mean_drivers);
+        const drivers = JSON.parse(p_drivers);
+        const p_bestdriver = JSON.parse(p_bestd)
+        const p_race = document.getElementById("p_race").value;
+        const p_variables = document.getElementById("p_variables").value;
+        const p_laps = document.getElementById("p_laps").value;
+        const blap = document.getElementById("p_best_lap").value;
+        const mlap = document.getElementById("p_mean_lap").value;
+        const best_lap = JSON.parse(blap)
+        const mean_lap = JSON.parse(mlap)
+        
+
+        const data = {
+            labels: drivers,
+            datasets: [{
+                type: 'bar',
+                label: "drivers",
+                data: meanDrivers,
+                borderColor: getDataColors(),
+                backgroundColor: getDataColors(20),
+                borderWidth: 1,
+                options: {
+                    plugins:{
+                    legend: {
+                        display: false
+                    }
+                }
+            }},{
+                type: 'line',
+                label: "mean of the race",
+                data: mean_lap,
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1,
+                
+            },{
+                type: 'line',
+                label: "best lap of the race",
+                data: best_lap,
+                borderColor: 'rgb(255, 0, 132)',
+                tension: 0.1,
+            }
+        ]}
+        const data2 = {
+            labels: drivers,
+            datasets:[{
+                data: p_bestdriver,
+                borderColor: 'rgb(255, 0, 132)',
+                backgroundColor: getDataColors(20),
+                borderWidth: 1
+            },{
+                label: "best lap of the race",
+                data: best_lap,
+                borderColor: 'rgb(130, 186, 223)',
+                backgroundColor: getDataColors(20),
+                borderWidth: 1
+            }]
+        }
+        new Chart(ctx_0, {
+            
+            data,
+            options:{
+                scales:{
+                    y:{
+                        beginAtZero: false
+                    }
+                }
+            }
+        });
+        new Chart(ctx_1, {
+            type: 'radar',
+            data: data2,
+            options:{
+                scales:{
+                    y:{
+                        beginAtZero: false
+                    }
+                },
+                plugins:{
+                    legend: {
+                        display: true
+                    },
+                }
+            }
+    });
     
-    
+      
+
+        const ctx_2 = document.getElementById('myChart');
+        const data_3 = {
+        labels: JSON.parse(p_laps),
+        datasets: JSON.parse(p_race).map((race, index) => ({
+        label: JSON.parse(p_variables)[index], 
+        data: race,
+        borderColor: getDataColors()[index],
+        backgroundColor: getDataColors(20)[index],
+        tension: 0.2, 
+        cubicInterpolationMode: 'monotone',
+        hidden: true
+        }))
+        };
+
+        new Chart(ctx_2, {
+        type: 'line',
+        data: data_3,
+        options: {
+            responsive: true,
+            plugins: {
+                zoom: {
+                    zoom: {
+                        wheel: {
+                            enabled: true,
+                        },
+                        pinch: {
+                            enabled: true,
+                        },
+                        drag: {
+                            enabled : true,
+                        },
+                        mode: 'y',
+                        scalemode: "xy"
+                    },
+                legend: {
+                    position: 'left'
+                }
+            }
+        }
+    }});
+    </script>
+  
 </body>
 {%endblock%} 
 

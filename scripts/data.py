@@ -1,27 +1,24 @@
 import csv
 
 class Henakart:
-    """Start the class Henakart where I can open and set up the CSV files sent to me by email."""
+    """Start the class Henakart where I can open and set up the CSV files sent by email."""
     def __init__(self, csv_name):
         self.csv_name = csv_name
 
     @property
     def cleaning_data(self):
-        data = self.csv_name.read().decode('utf-8')
-        data = data.split()
+        data = self.csv_name
         data = [r.split(";") for r in data]
         data[0].insert(0, "Vuelta")
         data[0].pop(-1)
-        x = ["0" for x in range(len(data[0]))]
-        data.insert(1, x) #first lap with all 0
+
         valor_reemplazo = "0"
         for fila in data:
             for i, datos in enumerate(fila):
                 fila[i] = fila[i].strip()
                 if datos == '' or datos == "\n": 
                     fila[i]= valor_reemplazo
-        return data
-        
+        return data    
     @property
     def swap_rows(self): #list: [driver [lap_time]]
         new_data = self.cleaning_data[0:]
@@ -42,15 +39,14 @@ class Henakart:
         for tiempos in carrera.values():
             for i, t in enumerate(tiempos):
                 tiempos[i] = float(t)
-        print(type(carrera))
         return carrera
     
     
     @property #LIST with the laps [1,2,3,4,5...]
     def laps_base(self):
         for d, t in self.race.items():
-            l = [x + 1 for x in range(len(t[1:]))]
-        return l        
+            l = [x + 1 for x in range(len(t[:]))]
+        return l      
             
         
     @property #LIST with the DRIVER NAMES
@@ -67,7 +63,7 @@ class Henakart:
     
 
     @property
-    def mean_absolute(self): #ABSOLUTE MEAN
+    def absolute_mean(self): #ABSOLUTE MEAN
         mean_list =[]
         for laps in self.race.values():
             for t in laps:
@@ -75,7 +71,12 @@ class Henakart:
                     continue
                 mean_list.append(t)
         mean = round(sum(mean_list)/len(mean_list), 3)
-        return mean
+        m = []
+        l = len(self.laps_base)
+        for x in range(1, l + 1):
+            m.append(mean)
+
+        return m
     
     def mean_per_driver(self, driver = None): #MEAN BY DRIVER
         
@@ -103,6 +104,7 @@ class Henakart:
     def mean_per_lap(self):
         mean_pl = {}
         mean = self.race.copy()
+        mean_perlap = []
         
         for t in mean.values():
             for i, tt in enumerate(t):
@@ -113,12 +115,12 @@ class Henakart:
                 mean_pl[i].append(tt)
         
         for v, t in mean_pl.items():
-            mean_pl[v] = round(sum(t)/len(t), 3)
-        return mean_pl
+            mean_perlap.append(round(sum(t)/len(t), 3))
+        return mean_perlap
     
     @property #ABSOLUTE BEST LAP OF THE RACE
     def best_lap_absolute(self):
-        best_la = {}
+        best_la = []
         best_abs = self.race.copy()
         best_lap = 10000E50
         for tiempos in best_abs.values():
@@ -127,14 +129,19 @@ class Henakart:
                     continue
                 if t <= best_lap:
                     best_lap = t
-            best_la["Best Lap"] = best_lap
-            return  best_la
+            best_la = best_lap
+        m = []
+        l = len(self.laps_base)
+        for x in range(1, l + 1):
+            m.append(best_la)
+        return  m
         
     @property # BEST LAP BY LAP
     def best_lap_lap(self):
         best_pl = {}
         bestpl = self.race.copy()
         best_lap = 10000E50
+        best_lpl = []
         for t in bestpl.values():
             for i, tt in enumerate(t):
                 if tt == 0.0 or tt >= 100.00:
@@ -143,8 +150,8 @@ class Henakart:
                     best_pl[i]=[]
                 best_pl[i].append(tt)
         for x, y in best_pl.items():
-            best_pl[x] = [min(y)]
-        return best_pl
+            best_lpl.append(min(y))
+        return best_lpl
                 
     def best_lap_driver(self, driver = None): #BEST LAP BY DRIVER
         bestpd = self.race.copy()
@@ -164,6 +171,23 @@ class Henakart:
                     return f"{driver}: {best_pd[d]}"
         else:
             return best_pd
+    @property
+    def all_vars(self): #Dict with driver´s lap by lap times, and adding four of the above variables
+        race_all_variable  = self.race.copy()
+        race_all_variable["ABSOLUTE MEAN OF THE RACE"] = self.absolute_mean
+        race_all_variable["ABSOLUTE BEST LAP OF THE RACE"] = self.best_lap_absolute
+        race_all_variable["MEAN PER LAP"] = self.mean_per_lap
+        race_all_variable["BEST LAP PER LAP"] = self.best_lap_lap
+        
+        return race_all_variable
+    @property
+    def variables(self):
+        variab = []
+        for v, t in self.all_vars.items():
+            variab.append(v)
+
+        return variab
+
     
         
 if __name__ == "__main__":
