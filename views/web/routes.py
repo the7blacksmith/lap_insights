@@ -1,58 +1,56 @@
-from flask import Blueprint, render_template, request, current_app, send_file
+import json
+
+from flask import Blueprint, render_template, request, send_file
+
 from scripts.data import Henakart
-from werkzeug.utils import secure_filename
-import os, json
 
 web = Blueprint("web", __name__)
+
+MAX_CSV_BYTES = 5 * 1024 * 1024
+
 
 @web.route("/")
 def t_home():
     return render_template("index.html")
 
-@web.route('/download')
+
+@web.route("/download")
 def download():
-    file_path= "staticFiles/test.csv"
-    return send_file(file_path, as_attachment=True)
+    return send_file("staticFiles/test.csv", as_attachment=True)
 
 
-
-@web.route('/race', methods=['GET', 'POST'])
+@web.route("/race", methods=["GET", "POST"])
 def plot_race():
-    upload_folder = current_app.config['UPLOAD_FOLDER']
-    if 'file' not in request.files:
-        return 'No file part'
-    
-    file = request.files['file']
-    
-    if file.filename == '':
-        return 'No selected file'
-    if file:
-        save_file = os.path.join(upload_folder, secure_filename(file.filename))
-        file.save(save_file)
-        with open (save_file, "r", encoding = "utf-8") as file:
-            data = file.readlines()
-        data = Henakart(data)
-        variables = json.dumps(list(data.variables))
-        race = json.dumps(list(data.all_vars.values()))
-        laps = json.dumps(data.laps_base)
-        mean_drivers = []
-        for md in data.mean_per_driver().values():
-            for mt in md:
-                mean_drivers.append(mt)
-        mean_drivers = json.dumps(mean_drivers)
-        drivers = json.dumps(list(data.mean_per_driver().keys()))
-        best_drivers = []
-        for bd in data.best_lap_driver().values():
-            for bt in bd:
-                best_drivers.append(bt)
-        best_drivers = json.dumps(best_drivers)
-        best_l = data.best_lap_absolute[0]
-        mean_l = data.absolute_mean[0]
-        best_lap = []
-        mean_lap = []
-        for bml in range(len(data.drivers)):
-            best_lap.append(best_l)
-            mean_lap.append(mean_l)
+    file = request.files.get("file")
+    if file is None or not file.filename:
+        return "No file selected.", 400
 
-        
-        return render_template("race.html", variables = variables, race = race, laps = laps, drivers = drivers, mean_drivers = mean_drivers, best_drivers = best_drivers, best_lap = best_lap, mean_lap = mean_lap)
+    raw_csv = file.read(MAX_CSV_BYTES + 1)
+    if len(raw_csv) > MAX_CSV_BYTES:
+        return "CSV is too large. Maximum file size is 5 MiB.", 413
+
+    try:
+        lines = raw_csv.decode("utf-8-sig").splitlines(keepends=True)
+    except UnicodeDecodeError:
+        return "Please upload a UTF-8 CSV file.", 400
+
+    data = Henakart(lines)
+    driver_means = data.mean_per_driver()
+    driver_bests = data.best_lap_driver()
+    driver_count = len(data.drivers)
+
+    return render_template(
+        "race.html",
+        variables=json.dumps(list(data.variables)),
+        race=json.dumps(list(data.all_vars.values())),
+        laps=json.dumps(data.laps_base),
+        drivers=json.dumps(list(driver_means.keys())),
+        mean_drivers=json.dumps(
+            [mean for means in driver_means.values() for mean in means]
+        ),
+        best_drivers=json.dumps(
+            [best for bests in driver_bests.values() for best in bests]
+        ),
+        best_lap=[data.best_lap_absolute[0]] * driver_count,
+        mean_lap=[data.absolute_mean[0]] * driver_count,
+    )
