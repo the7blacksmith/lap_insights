@@ -5,6 +5,7 @@ UPLOAD_FOLDER = 'csv_files'
 
 def create_app():
     app = Flask(__name__)
+    app.config["MAX_CONTENT_LENGTH"] = 6 * 1024 * 1024
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
     app.register_blueprint(web, UPLOAD_FOLDER = UPLOAD_FOLDER)
     return app
